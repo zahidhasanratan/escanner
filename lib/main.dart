@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(MyApp());
@@ -37,6 +39,58 @@ class _HomeScreenState extends State<HomeScreen> {
     _barcodeController.text = _scannedValue;
   }
 
+  Future<void> _verifyBarcode() async {
+    print('Scanned barcode: $_scannedValue'); // Debugging: Print the scanned barcode
+
+    final url = 'https://backup.zahid.com.bd/Junior/booth1/check.php';
+    final response = await http.post(Uri.parse(url), body: {'user_name': _scannedValue});
+
+    if (response.statusCode == 200) {
+      final jsonData = jsonDecode(response.body);
+      final bool status = jsonData['status'];
+      final String message = jsonData['msg'];
+
+      print('Response status: $status'); // Debugging: Print the response status
+      print('Response message: $message'); // Debugging: Print the response message
+
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(status ? 'Success' : 'Failure'),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.pop(context); // Close the dialog
+              },
+            ),
+          ],
+        ),
+      );
+    } else {
+      print('Request failed with status: ${response.statusCode}'); // Debugging: Print the request status code
+
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Error'),
+          content: Text('Failed to verify the barcode. Please try again later.'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.pop(context); // Close the dialog
+              },
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 16), // Add left and right padding here
+              padding: EdgeInsets.symmetric(horizontal: 16),
               child: TextFormField(
                 controller: _barcodeController,
                 onChanged: (value) {
@@ -62,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 decoration: InputDecoration(
                   labelText: 'Scanned Barcode',
                 ),
-                autofocus: true, // Keyboard will open automatically
+                autofocus: true,
               ),
             ),
             SizedBox(height: 20),
@@ -99,10 +153,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: InkWell(
                     onTap: () async {
                       String barcode = await FlutterBarcodeScanner.scanBarcode(
-                        '#ff6666', // Color for the scan button background
-                        'Cancel', // Text for the cancel button
-                        true, // Use flash
-                        ScanMode.BARCODE, // Scan mode (BARCODE or QR)
+                        '#ff6666',
+                        'Cancel',
+                        true,
+                        ScanMode.BARCODE,
                       );
 
                       setState(() {
@@ -110,7 +164,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         _barcodeController.text = barcode;
                       });
 
-                      // Handle the scanned barcode here (e.g., print it)
                       print('Scanned barcode: $barcode');
                     },
                     customBorder: CircleBorder(),
@@ -126,13 +179,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 SizedBox(width: 20),
                 Material(
-                  color: Colors.green, // Updated to greenish color
+                  color: Colors.green,
                   shape: CircleBorder(),
                   elevation: 8,
                   child: InkWell(
-                    onTap: () {
-                      // Implement your verification function here
-                    },
+                    onTap: _verifyBarcode,
                     customBorder: CircleBorder(),
                     child: Padding(
                       padding: const EdgeInsets.all(12.0),
