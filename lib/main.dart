@@ -40,56 +40,45 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _verifyBarcode() async {
-    print('Scanned barcode: $_scannedValue'); // Debugging: Print the scanned barcode
-
     final url = 'https://backup.zahid.com.bd/Junior/booth1/check.php';
-    final response = await http.post(Uri.parse(url), body: {'user_name': _scannedValue});
 
-    if (response.statusCode == 200) {
-      final jsonData = jsonDecode(response.body);
-      final bool status = jsonData['status'];
-      final String message = jsonData['msg'];
+    try {
+      final response = await http.post(Uri.parse(url), body: {'user_name': _scannedValue});
 
-      print('Response status: $status'); // Debugging: Print the response status
-      print('Response message: $message'); // Debugging: Print the response message
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        final bool status = jsonData['status'];
+        final String message = jsonData['msg'];
 
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(status ? 'Success' : 'Failure'),
-          content: Text(message),
-          actions: <Widget>[
-            TextButton(
-              child: Text('OK'),
-              onPressed: () {
-                Navigator.pop(context); // Close the dialog
-              },
-            ),
-          ],
-        ),
-      );
-    } else {
-      print('Request failed with status: ${response.statusCode}'); // Debugging: Print the request status code
-
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Error'),
-          content: Text('Failed to verify the barcode. Please try again later.'),
-          actions: <Widget>[
-            TextButton(
-              child: Text('OK'),
-              onPressed: () {
-                Navigator.pop(context); // Close the dialog
-              },
-            ),
-          ],
-        ),
-      );
+        // Show the response message in an alert dialog
+        showAlertDialog(status, message);
+      } else {
+        // Show an error alert if the HTTP request fails
+        showAlertDialog(false, 'Failed to verify the barcode. Please try again later.');
+      }
+    } catch (e) {
+      // Handle any exceptions or errors that occur during the request
+      showAlertDialog(false, 'An error occurred during the request. Please check your network connection.');
     }
   }
 
-
+  void showAlertDialog(bool status, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(status ? 'Success' : 'Failure'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close the dialog
+            },
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
