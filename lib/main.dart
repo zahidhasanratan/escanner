@@ -4,6 +4,7 @@ import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:http/http.dart' as http;
 
+
 void main() {
   runApp(MyApp());
 }
@@ -52,6 +53,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
         // Show the response message in an alert dialog
         showAlertDialog(status, message);
+
+        // Clear the input field after showing the alert
+        setState(() {
+          _scannedValue = '';
+          _barcodeController.clear();
+        });
       } else {
         // Show an error alert if the HTTP request fails
         showAlertDialog(false, 'Failed to verify the barcode. Please try again later.');
@@ -63,11 +70,21 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void showAlertDialog(bool status, String message) {
+    Color alertColor;
+    if (status) {
+      alertColor = Colors.green;
+    } else if (message == 'Already Entered') {
+      alertColor = Colors.red;
+    } else {
+      alertColor = Colors.yellow;
+    }
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(status ? 'Success' : 'Failure'),
         content: Text(message),
+        backgroundColor: alertColor,
         actions: [
           TextButton(
             onPressed: () {
@@ -120,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     onTap: () {
                       setState(() {
                         _scannedValue = '';
-                        _barcodeController.text = '';
+                        _barcodeController.clear();
                       });
                     },
                     customBorder: CircleBorder(),
