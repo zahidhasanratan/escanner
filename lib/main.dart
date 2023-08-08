@@ -57,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final String message = jsonData['message'];
 
       if (success) {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen()));
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen(_userIdController.text)));
       } else {
         setState(() {
           _loginMessage = message;
@@ -132,6 +132,10 @@ class _LoginScreenState extends State<LoginScreen> {
 }
 
 class HomeScreen extends StatefulWidget {
+  final String userId;
+
+  HomeScreen(this.userId);
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
@@ -150,7 +154,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final url = 'https://backup.zahid.com.bd/Junior/booth1/check.php';
 
     try {
-      final response = await http.post(Uri.parse(url), body: {'user_name': _scannedValue});
+      final response = await http.post(Uri.parse(url), body: {
+        'user_name': _scannedValue,
+        'user_id': widget.userId,
+      });
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
