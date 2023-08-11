@@ -143,6 +143,13 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   TextEditingController _barcodeController = TextEditingController();
   String _scannedValue = '';
+  int _currentIndex = 0;
+  void _performLogout() {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => LoginScreen()),
+          (Route<dynamic> route) => false,
+    );
+  }
 
   @override
   void initState() {
@@ -319,6 +326,34 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          if (index == 2) {
+            // Handle logout action here
+            _performLogout();
+          } else {
+            setState(() {
+              _currentIndex = index;
+            });
+          }
+        },
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list),
+            label: 'Entry List',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.logout), // New logout icon
+            label: 'Logout', // New logout label
+          ),
+        ],
+      ),
+
     );
   }
 }
