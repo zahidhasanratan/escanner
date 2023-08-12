@@ -154,7 +154,9 @@ class _EntryListPageState extends State<EntryListPage> {
 
   Future<void> fetchEntries() async {
     final url = 'https://backup.zahid.com.bd/Junior/booth1/fetch_data.php';
-    final response = await http.get(Uri.parse(url));
+    final response = await http.post(Uri.parse(url), body: {
+      'user_id': widget.userId,
+    });
 
     if (response.statusCode == 200) {
       final jsonData = jsonDecode(response.body);
