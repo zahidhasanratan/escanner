@@ -182,8 +182,9 @@ class _EntryListPageState extends State<EntryListPage> {
       body: ListView.builder(
         itemCount: entries.length,
         itemBuilder: (context, index) {
+          int descendingNumber = entries.length - index;
           return ListTile(
-            title: Text('Name: ${entries[index]['name']}'),
+            title: Text('Entry $descendingNumber: ${entries[index]['name']}'),
             subtitle: Text('Booth: ${entries[index]['booth']}'),
           );
         },
