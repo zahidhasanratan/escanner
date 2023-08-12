@@ -140,6 +140,59 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
+class EntryListPage extends StatefulWidget {
+  final String userId;
+
+  EntryListPage({required this.userId});
+
+  @override
+  _EntryListPageState createState() => _EntryListPageState();
+}
+
+class _EntryListPageState extends State<EntryListPage> {
+  List<Map<String, dynamic>> entries = [];
+
+  Future<void> fetchEntries() async {
+    final url = 'https://backup.zahid.com.bd/Junior/booth1/fetch_data.php';
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final jsonData = jsonDecode(response.body);
+      if (jsonData['success']) {
+        setState(() {
+          entries = List<Map<String, dynamic>>.from(jsonData['entries']);
+        });
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchEntries();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Entry List'),
+        backgroundColor: Colors.black,
+      ),
+      body: ListView.builder(
+        itemCount: entries.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text('Name: ${entries[index]['name']}'),
+            subtitle: Text('Booth: ${entries[index]['booth']}'),
+          );
+        },
+      ),
+    );
+  }
+}
+
+
 class _HomeScreenState extends State<HomeScreen> {
   TextEditingController _barcodeController = TextEditingController();
   String _scannedValue = '';
@@ -332,7 +385,15 @@ class _HomeScreenState extends State<HomeScreen> {
           if (index == 2) {
             // Handle logout action here
             _performLogout();
-          } else {
+          }
+          else if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => EntryListPage(userId: widget.userId),
+              ),
+            );
+          }else {
             setState(() {
               _currentIndex = index;
             });
@@ -343,10 +404,12 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: Icon(Icons.home),
             label: 'Home',
           ),
+
           BottomNavigationBarItem(
             icon: Icon(Icons.list),
             label: 'Entry List',
           ),
+
           BottomNavigationBarItem(
             icon: Icon(Icons.logout), // New logout icon
             label: 'Logout', // New logout label
